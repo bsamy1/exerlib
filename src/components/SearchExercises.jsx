@@ -20,21 +20,55 @@ const SearchExercises = ({setExercises, bodyPart, setBodyPart}) => {
   }, []);
 
   const handleSearch = async () => {
-    if (search) {
-      const exercisesData = await fetchData('https://exercisedb.p.rapidapi.com/exercises', exerciseOptions);
-
-      const searchedExercises = exercisesData.filter(
-      (exercise) =>
-        exercise.name.toLowerCase().includes(search) ||
-        exercise.target.toLowerCase().includes(search) ||
-        exercise.equipment.toLowerCase().includes(search) ||
-        exercise.bodyPart.toLowerCase().includes(search)
+  if (search) {
+    let exercisesData = [];
+    
+    // Special case for "legs" - fetch both lower and upper legs
+    if (search.toLowerCase() === 'legs') {
+      const lowerLegsData = await fetchData(
+        'https://exercisedb.p.rapidapi.com/exercises/bodyPart/lower%20legs', 
+        exerciseOptions
       );
+      const upperLegsData = await fetchData(
+        'https://exercisedb.p.rapidapi.com/exercises/bodyPart/upper%20legs', 
+        exerciseOptions
+      );
+      exercisesData = [...lowerLegsData, ...upperLegsData];
+    }
+    // Check if search term matches a body part
+    else {
+      const bodyPartMatch = bodyParts.find(part => 
+        part.toLowerCase() === search.toLowerCase()
+      );
+      
+      if (bodyPartMatch && bodyPartMatch !== 'all') {
+        // Search by body part endpoint
+        exercisesData = await fetchData(
+          `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPartMatch}`, 
+          exerciseOptions
+        );
+      } else {
+        // Fetch all exercises for general search
+        exercisesData = await fetchData(
+          'https://exercisedb.p.rapidapi.com/exercises', 
+          exerciseOptions
+        );
+        
+        // Filter results
+        exercisesData = exercisesData.filter(
+          (exercise) =>
+            exercise.name.toLowerCase().includes(search) ||
+            exercise.target.toLowerCase().includes(search) ||
+            exercise.equipment.toLowerCase().includes(search) ||
+            exercise.bodyPart.toLowerCase().includes(search)
+        );
+      }
+    }
 
-      setSearch('');
-      setExercises(searchedExercises);}
+    setSearch('');
+    setExercises(exercisesData);
   }
-
+}
 
   return (
     <Stack alignItems="center" mt="37px" justifyContent="center" p="20px">
