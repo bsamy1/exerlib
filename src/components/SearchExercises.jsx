@@ -6,7 +6,6 @@ import HorizontalScrollbar from './HorizontalScrollbar';
 
 const SearchExercises = ({setExercises, bodyPart, setBodyPart}) => {
   const [search, setSearch] = useState('')
- 
   const [bodyParts, setBodyParts] = useState([])
 
   useEffect(() => {
@@ -19,56 +18,88 @@ const SearchExercises = ({setExercises, bodyPart, setBodyPart}) => {
     fetchExercisesData();
   }, []);
 
-  const handleSearch = async () => {
-  if (search) {
-    let exercisesData = [];
-    
-    // Special case for "legs" - fetch both lower and upper legs
-    if (search.toLowerCase() === 'legs') {
-      const lowerLegsData = await fetchData(
-        'https://exercisedb.p.rapidapi.com/exercises/bodyPart/lower%20legs', 
-        exerciseOptions
-      );
-      const upperLegsData = await fetchData(
-        'https://exercisedb.p.rapidapi.com/exercises/bodyPart/upper%20legs', 
-        exerciseOptions
-      );
-      exercisesData = [...lowerLegsData, ...upperLegsData];
-    }
-    // Check if search term matches a body part
-    else {
-      const bodyPartMatch = bodyParts.find(part => 
-        part.toLowerCase() === search.toLowerCase()
-      );
-      
-      if (bodyPartMatch && bodyPartMatch !== 'all') {
-        // Search by body part endpoint
-        exercisesData = await fetchData(
-          `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPartMatch}`, 
+  // Add this useEffect to fetch exercises when bodyPart changes
+  useEffect(() => {
+    const fetchExercisesByBodyPart = async () => {
+      let exercisesData = [];
+
+      if (bodyPart === 'all') {
+        exercisesData = await fetchData('https://exercisedb.p.rapidapi.com/exercises', exerciseOptions);
+      } else if (bodyPart === 'legs') {
+        const lowerLegsData = await fetchData(
+          'https://exercisedb.p.rapidapi.com/exercises/bodyPart/lower%20legs', 
           exerciseOptions
         );
+        const upperLegsData = await fetchData(
+          'https://exercisedb.p.rapidapi.com/exercises/bodyPart/upper%20legs', 
+          exerciseOptions
+        );
+        exercisesData = [...lowerLegsData, ...upperLegsData];
       } else {
-        // Fetch all exercises for general search
         exercisesData = await fetchData(
-          'https://exercisedb.p.rapidapi.com/exercises', 
+          `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}`, 
           exerciseOptions
-        );
-        
-        // Filter results
-        exercisesData = exercisesData.filter(
-          (exercise) =>
-            exercise.name.toLowerCase().includes(search) ||
-            exercise.target.toLowerCase().includes(search) ||
-            exercise.equipment.toLowerCase().includes(search) ||
-            exercise.bodyPart.toLowerCase().includes(search)
         );
       }
-    }
 
-    setSearch('');
-    setExercises(exercisesData);
+      setExercises(exercisesData);
+    };
+
+    if (bodyPart) {
+      fetchExercisesByBodyPart();
+    }
+  }, [bodyPart, setExercises]);
+
+  const handleSearch = async () => {
+    if (search) {
+      let exercisesData = [];
+      
+      // Special case for "legs" - fetch both lower and upper legs
+      if (search.toLowerCase() === 'legs') {
+        const lowerLegsData = await fetchData(
+          'https://exercisedb.p.rapidapi.com/exercises/bodyPart/lower%20legs', 
+          exerciseOptions
+        );
+        const upperLegsData = await fetchData(
+          'https://exercisedb.p.rapidapi.com/exercises/bodyPart/upper%20legs', 
+          exerciseOptions
+        );
+        exercisesData = [...lowerLegsData, ...upperLegsData];
+      }
+      // Check if search term matches a body part
+      else {
+        const bodyPartMatch = bodyParts.find(part => 
+          part.toLowerCase() === search.toLowerCase()
+        );
+        
+        if (bodyPartMatch && bodyPartMatch !== 'all') {
+          // Search by body part endpoint
+          exercisesData = await fetchData(
+            `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPartMatch}`, 
+            exerciseOptions
+          );
+        } else {
+          // Fetch all exercises for general search
+          exercisesData = await fetchData(
+            'https://exercisedb.p.rapidapi.com/exercises', 
+            exerciseOptions
+          );
+          
+          // Filter results
+          exercisesData = exercisesData.filter(
+            (exercise) =>
+              exercise.name.toLowerCase().includes(search) ||
+              exercise.target.toLowerCase().includes(search) ||
+              exercise.equipment.toLowerCase().includes(search) ||
+              exercise.bodyPart.toLowerCase().includes(search)
+          );
+        }
+      }
+
+      setSearch('');
+      setExercises(exercisesData);
+    }
   }
-}
 
   return (
     <Stack alignItems="center" mt="37px" justifyContent="center" p="20px">
@@ -117,10 +148,9 @@ const SearchExercises = ({setExercises, bodyPart, setBodyPart}) => {
       </Box>
       <Box sx={{ position: 'relative', width: '100%', p: '20px' }}>
          <HorizontalScrollbar data={bodyParts}
-         bodyPart={bodyPart} setBodyPart=
-         {setBodyPart}/>
+         bodyPart={bodyPart} setBodyPart={setBodyPart}/>
       </Box>
-      </Stack>
+    </Stack>
   );
 };
 
