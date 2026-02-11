@@ -1,36 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Box } from '@mui/material';
-
-import { exerciseOptions, fetchData } from '../utils/fetchData';
-import Detail from '../components/Detail';
-import ExerciseVideos from '../components/ExerciseVideos';
-import SimilarExercises from '../components/SimilarExercises';
+import { Box, Typography } from '@mui/material';
 
 const ExerciseDetail = () => {
-  const { id } = useParams(); 
-  const [exerciseDetail, setExerciseDetail] = useState({}); 
-
-  useEffect(() => {
-    const fetchExerciseData = async () => {
-      const exerciseData = await fetchData(
-        `https://exercisedb.p.rapidapi.com/exercises/${id}`,
-        exerciseOptions
-      );
-      setExerciseDetail(exerciseData);
-    };
-
-    fetchExerciseData();
-  }, [id]); 
+  const { id } = useParams(); // get the exercise ID from the URL
 
   return (
     <Box>
-      <Detail exercise={exerciseDetail} />
-      <ExerciseVideos exerciseName={exerciseDetail.name} />
-      <SimilarExercises 
-        target={exerciseDetail.target} 
-        bodyPart={exerciseDetail.bodyPart} 
-      />
+      <Typography variant="h4">
+        Loading exercise ID: {id} This feature is under construction.
+      </Typography>
     </Box>
   );
 };
