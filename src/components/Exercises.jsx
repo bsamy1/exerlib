@@ -15,12 +15,15 @@ const Exercises = ({ exercises, setExercises, bodyPart }) => {
       let exercisesData = [];
 
       if (bodyPart === 'all') {
-        exercisesData = await fetchData('https://exercisedb.p.rapidapi.com/exercises', exerciseOptions);
+        // FIX: Added ?limit=30 to the 'all' fetch URL
+        exercisesData = await fetchData('https://exercisedb.p.rapidapi.com/exercises?limit=30', exerciseOptions);
       } else {
-        exercisesData = await fetchData(`https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}`, exerciseOptions);
+        // This one was already updated, but ensuring it matches
+        exercisesData = await fetchData(`https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}?limit=30`, exerciseOptions);
       }
 
       setExercises(exercisesData);
+      setCurrentPage(1); // Reset to page 1 whenever the category changes
     };
 
     fetchExercisesData();
@@ -48,7 +51,7 @@ const Exercises = ({ exercises, setExercises, bodyPart }) => {
         ))}
       </Stack>
       <Stack sx={{ mt: { lg: '114px', xs: '70px' } }} alignItems="center">
-        {exercises.length > 9 && (
+        {exercises.length > exercisesPerPage && (
           <Pagination
             color="standard"
             shape="rounded"
